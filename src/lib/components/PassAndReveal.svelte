@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import Button from './Button.svelte';
+  import PlayerAvatar from './PlayerAvatar.svelte';
   import { colorHex, textColorOn } from '../colors';
+  import { uniqueInitials } from '../initials';
   import type { Player } from '../stores/players.svelte';
 
   /**
@@ -24,6 +26,7 @@
   const player = $derived(players[index]);
   const isLast = $derived(index === players.length - 1);
   const hex = $derived(colorHex(player.color));
+  const initials = $derived(uniqueInitials(players.map((p) => p.name)));
 
   function next() {
     revealed = false;
@@ -37,11 +40,12 @@
 
   {#if !revealed}
     <div class="panel hidden-panel">
+      <PlayerAvatar color={player.color} initials={initials[index]} size="lg" />
       <p>Gib das Handy an</p>
       <h2 class="name">{player.name}</h2>
       <p class="small">Nur {player.name} darf hinschauen!</p>
     </div>
-    <Button size="lg" block color={hex} onclick={() => (revealed = true)}>Ich bin {player.name} – aufdecken</Button>
+    <Button size="lg" block color={hex} onclick={() => (revealed = true)}>👁️ Ich bin {player.name} – aufdecken</Button>
   {:else}
     <div class="panel secret-panel">
       {@render secret(player, index)}

@@ -23,6 +23,8 @@ diskutiert und abgestimmt.
 | Aufdecken-Button in Spielerfarbe | Auch „Ich bin … – aufdecken“ hat die Farbe des Spielers, der dran ist. | 0.4.0 |
 | Eindeutige Initialen | Jeder Farbkreis zeigt Initialen, die es nur einmal gibt. Bei Gleichstand wird auf andere Buchstaben ausgewichen (Michael = Mi, Mia = Ma), bei zwei Wörtern werden die Anfangsbuchstaben genommen (Anna Lena = AL). Wer früher in der Liste steht, behält seine Initialen. | 0.4.0 |
 | Farbige Namen | Startspieler und Imposter werden in der Auflösung als Farb-Chip angezeigt. | 0.2.0 |
+| Avatar beim Weitergeben | Auf dem Weitergeben-Screen erscheint ein großer Farbkreis mit Initialen. So erkennt man auch ohne Lesen, wer dran ist. Der Aufdecken-Button hat zusätzlich ein 👁️. | 0.5.0 |
+| Avatar für den Startspieler | In der Diskussionsphase zeigt ein großer Farbkreis mit Initialen, wer beginnt. | 0.5.0 |
 
 ### Spielablauf
 
@@ -45,12 +47,14 @@ Die Einstellungen werden gespeichert (`localStorage`-Schlüssel `partyspiele:imp
 | Diskussionszeit | 0 bis 15 Minuten, 0 schaltet den Timer aus. Standard: 3 Minuten. | 0.1.0 |
 | Kategorie-Hinweis | Ist er an, sieht der Imposter die Kategorie des Wortes. Standard: an. | 0.1.0 |
 | Kategorienauswahl | Mehrfachauswahl, mindestens eine Kategorie bleibt aktiv. | 0.1.0 |
+| Bilder-Modus | Schalter „Bilder-Modus“. Statt eines Wortes gibt es ein großes Emoji mit dem Wort darunter, so können Leser und Nicht-Leser zusammen spielen. Der Imposter sieht 🕵️❓ und mit Kategorie-Hinweis das Kategorie-Emoji. Auch die Auflösung zeigt das Bild. Die Kategorieauswahl wird für jeden Modus getrennt gespeichert (`pictureCategoryIds`). Es gibt keine Unterscheidung nach Alter. | 0.5.0 |
 
 ### Inhalte
 
 | Feature | Details | Seit |
 |---|---|---|
 | Wortlisten | 7 Kategorien mit zusammen 182 Wörtern: Essen & Trinken, Orte, Tiere, Berufe, Gegenstände, Sport & Freizeit, Filme & Figuren | 0.1.0 |
+| Bilderlisten | 5 Kategorien mit zusammen 126 Emoji-Motiven: Tiere, Essen, Fahrzeuge, Dinge, Natur & Wetter. Nur Motive, die ein Kind ohne Lesen eindeutig erkennt und benennen kann. | 0.5.0 |
 | Keine Wortwiederholung | Innerhalb einer Sitzung kommt kein Wort doppelt. Ist der Vorrat erschöpft, beginnt er von vorn. | 0.1.0 |
 
 ---
@@ -98,6 +102,14 @@ Imposter war das erste Spiel. Fast die ganze gemeinsame Basis ist deshalb für I
 | **`Button` hat eine optionale `color`-Prop** (Hex-Wert). Die Schriftfarbe wird über `textColorOn()` automatisch angepasst, Rahmen und Schatten heben den Button von gleichfarbigen Flächen ab. | [src/lib/components/Button.svelte](../../lib/components/Button.svelte) | Jeder Button in jedem Spiel kann jetzt in einer Spielerfarbe erscheinen. |
 | **`uniqueInitials()`** berechnet eindeutige Initialen für die ganze Spielerliste. | [src/lib/initials.ts](../../lib/initials.ts) | `PlayerSetup` und `ColorPalette` (vergebene Farben). Wird ein Spieler entfernt oder umbenannt, können sich die Initialen der Spieler nach ihm ändern. |
 
+### Bilder-Modus (0.5.0)
+
+| Änderung | Ort | Folge für die App |
+|---|---|---|
+| **Neue Komponente `PlayerAvatar`**: Farbkreis mit Initialen in zwei Größen (`sm`, `lg`). Aus `PlayerSetup` herausgelöst. | [src/lib/components/PlayerAvatar.svelte](../../lib/components/PlayerAvatar.svelte) | `PlayerSetup`, `PassAndReveal`, Imposter. Für alle Spiele wiederverwendbar. |
+| **`PassAndReveal` zeigt den Avatar und 👁️** auf dem Weitergeben-Screen. Die Initialen berechnet die Komponente selbst aus der übergebenen Spielerliste. | [src/lib/components/PassAndReveal.svelte](../../lib/components/PassAndReveal.svelte) | Das gilt automatisch in allen Spielen, die herumgereicht werden. |
+| Bundle-Größe | – | +1,6 KB gzip (jetzt ca. 31 KB JS). Emoji sind Text und funktionieren offline. |
+
 ---
 
 ## Bekannte Einschränkungen
@@ -107,6 +119,7 @@ Imposter war das erste Spiel. Fast die ganze gemeinsame Basis ist deshalb für I
 - **Die Liste bereits gespielter Wörter** liegt nur im Arbeitsspeicher und beginnt nach jedem Neustart von vorn.
 - **Signalton im Stummmodus:** Ist das iPhone stumm geschaltet, hört man den Signalton am Ende des Timers nicht.
 - **Keine Vibration**, weil iOS die Vibration API nicht unterstützt.
+- **Emoji sehen je nach Gerät anders aus.** Auf iOS und Android sind die Motive gut erkennbar. Auf alten Geräten können neuere Emoji wie 🪁, 🪥 oder 🪑 fehlen.
 - **Höchstens 20 Spieler**, weil es 20 Farben gibt. Mehr Spieler brauchen mehr Farben in [colors.ts](../../lib/colors.ts).
 
 ## Ideen / Backlog

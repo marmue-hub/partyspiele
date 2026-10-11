@@ -1,7 +1,8 @@
 <script lang="ts">
   import Card from './Card.svelte';
   import ColorPalette from './ColorPalette.svelte';
-  import { PLAYER_COLORS, colorHex, textColorOn } from '../colors';
+  import PlayerAvatar from './PlayerAvatar.svelte';
+  import { PLAYER_COLORS, colorHex } from '../colors';
   import { uniqueInitials } from '../initials';
   import { MAX_PLAYERS, type Player } from '../stores/players.svelte';
 
@@ -92,15 +93,8 @@
       {#each players as p, i}
         {@const hex = colorHex(p.color)}
         <li class:editing={editing === i} style:--player={hex}>
-          <button
-            type="button"
-            class="swatch"
-            style:background={hex}
-            style:color={textColorOn(hex)}
-            onclick={() => startEdit(i)}
-            aria-label="{p.name} bearbeiten"
-          >
-            {initials[i]}
+          <button type="button" class="swatch" onclick={() => startEdit(i)} aria-label="{p.name} bearbeiten">
+            <PlayerAvatar color={p.color} initials={initials[i]} />
           </button>
 
           {#if editing === i}
@@ -180,14 +174,11 @@
   .swatch {
     appearance: none;
     border: none;
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 50%;
+    background: none;
+    padding: 0;
     font: inherit;
-    font-size: 0.8rem;
-    font-weight: 800;
     cursor: pointer;
-    flex-shrink: 0;
+    display: flex;
   }
   .name {
     appearance: none;
