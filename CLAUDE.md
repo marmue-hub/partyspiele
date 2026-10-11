@@ -41,4 +41,4 @@ Jedes Minispiel hat eine `FEATURES.md` in seinem Ordner (`src/games/<spiel>/FEAT
 
 - `main` ist geschützt: Force-Push und Löschen sind verboten, auch für Admins. Normale Pushes gehen.
 - Die GitHub Actions in `.github/workflows/deploy.yml` sind auf Commit-SHAs gepinnt, die Version steht als Kommentar dahinter. Für ein Update löst du den Release-Tag zum Commit-SHA auf (`gh api repos/<action>/git/ref/tags/<tag>`) und ersetzt beides. Ein Release sollte mindestens 2 Wochen alt sein.
-- Dependabot-Sicherheitswarnungen sind aktiv.
+- Dependabot-Sicherheitswarnungen sind aktiv. Zusätzlich legt Dependabot monatlich einen gebündelten PR mit Action-Updates an (`.github/dependabot.yml`, nur Releases ab 14 Tagen Alter). Die SHAs und Versionskommentare aktualisiert Dependabot selbst.
