@@ -2,6 +2,7 @@
   import Card from './Card.svelte';
   import ColorPalette from './ColorPalette.svelte';
   import { PLAYER_COLORS, colorHex, textColorOn } from '../colors';
+  import { uniqueInitials } from '../initials';
   import { MAX_PLAYERS, type Player } from '../stores/players.svelte';
 
   interface Props {
@@ -40,13 +41,8 @@
 
   // --- palette ---
   const paletteSelected = $derived(editingPlayer ? editingPlayer.color : newColor);
-  const taken = $derived(
-    new Map(players.filter((p) => p !== editingPlayer).map((p) => [p.color, initials(p.name)])),
-  );
-
-  function initials(n: string) {
-    return n.slice(0, 2);
-  }
+  const initials = $derived(uniqueInitials(players.map((p) => p.name)));
+  const taken = $derived(new Map(players.flatMap((p, i) => (i === editing ? [] : [[p.color, initials[i]]]))));
 
   function add(e: SubmitEvent) {
     e.preventDefault();
@@ -104,7 +100,7 @@
             onclick={() => startEdit(i)}
             aria-label="{p.name} bearbeiten"
           >
-            {initials(p.name)}
+            {initials[i]}
           </button>
 
           {#if editing === i}

@@ -1,18 +1,29 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import type { HTMLButtonAttributes } from 'svelte/elements';
+  import { textColorOn } from '../colors';
 
   interface Props extends HTMLButtonAttributes {
     variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
     size?: 'md' | 'lg';
     block?: boolean;
+    /** Custom background (hex), e.g. a player color. Text color adapts automatically. */
+    color?: string;
     children: Snippet;
   }
 
-  let { variant = 'primary', size = 'md', block = false, children, ...rest }: Props = $props();
+  let { variant = 'primary', size = 'md', block = false, color, children, ...rest }: Props = $props();
 </script>
 
-<button class="btn {variant} {size}" class:block type="button" {...rest}>
+<button
+  class="btn {variant} {size}"
+  class:block
+  class:custom={color}
+  style:background={color}
+  style:color={color && textColorOn(color)}
+  type="button"
+  {...rest}
+>
   {@render children()}
 </button>
 
@@ -44,4 +55,9 @@
   .secondary { background: var(--surface-2); border-color: var(--border); }
   .ghost { background: transparent; color: var(--muted); }
   .danger { background: var(--danger); }
+  .custom {
+    border-color: rgb(255 255 255 / 0.35);
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.35);
+  }
+  .custom:active:not(:disabled) { filter: brightness(0.9); }
 </style>

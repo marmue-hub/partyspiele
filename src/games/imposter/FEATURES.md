@@ -20,6 +20,8 @@ diskutiert und abgestimmt.
 | Farbe ändern | Antippen des Farbkreises neben dem Namen öffnet die Palette für diesen Spieler. | 0.2.0 |
 | Spieler bearbeiten | Antippen eines Spielers macht seinen Namen editierbar und öffnet die Palette für ihn. Die Farbe ändert sich sofort, der Name wird mit ✓ oder Enter übernommen. Doppelte oder leere Namen werden abgelehnt. | 0.3.0 |
 | Farbe als Hintergrund | Beim Herumreichen („Gib das Handy an …“) ist die Fläche in der Farbe des Spielers gefüllt. Auch die aufgedeckte Karte ist in seiner Farbe eingefärbt. | 0.2.0 |
+| Aufdecken-Button in Spielerfarbe | Auch „Ich bin … – aufdecken“ hat die Farbe des Spielers, der dran ist. | 0.4.0 |
+| Eindeutige Initialen | Jeder Farbkreis zeigt Initialen, die es nur einmal gibt. Bei Gleichstand wird auf andere Buchstaben ausgewichen (Michael = Mi, Mia = Ma), bei zwei Wörtern werden die Anfangsbuchstaben genommen (Anna Lena = AL). Wer früher in der Liste steht, behält seine Initialen. | 0.4.0 |
 | Farbige Namen | Startspieler und Imposter werden in der Auflösung als Farb-Chip angezeigt. | 0.2.0 |
 
 ### Spielablauf
@@ -88,6 +90,13 @@ Imposter war das erste Spiel. Fast die ganze gemeinsame Basis ist deshalb für I
 |---|---|---|
 | **Palette auf 20 Farben** erweitert, nach Farbton sortiert, Raster mit 5 Spalten | [src/lib/colors.ts](../../lib/colors.ts), [ColorPalette.svelte](../../lib/components/ColorPalette.svelte) | Maximal 20 Spieler in allen Spielen. Bestehende Farb-IDs sind gleich geblieben, gespeicherte Spieler behalten also ihre Farbe. |
 | **Bearbeiten-Modus** in `PlayerSetup` für Name und Farbe | [src/lib/components/PlayerSetup.svelte](../../lib/components/PlayerSetup.svelte) | Alle Spiele, die `PlayerSetup` nutzen, bekommen das automatisch. Ein Spieler wird nur noch über seinen Index in der Liste identifiziert, nicht mehr über den Namen. |
+
+### Spielerfarbe am Button, eindeutige Initialen (0.4.0)
+
+| Änderung | Ort | Folge für die App |
+|---|---|---|
+| **`Button` hat eine optionale `color`-Prop** (Hex-Wert). Die Schriftfarbe wird über `textColorOn()` automatisch angepasst, Rahmen und Schatten heben den Button von gleichfarbigen Flächen ab. | [src/lib/components/Button.svelte](../../lib/components/Button.svelte) | Jeder Button in jedem Spiel kann jetzt in einer Spielerfarbe erscheinen. |
+| **`uniqueInitials()`** berechnet eindeutige Initialen für die ganze Spielerliste. | [src/lib/initials.ts](../../lib/initials.ts) | `PlayerSetup` und `ColorPalette` (vergebene Farben). Wird ein Spieler entfernt oder umbenannt, können sich die Initialen der Spieler nach ihm ändern. |
 
 ---
 

@@ -41,7 +41,7 @@
       <h2 class="name">{player.name}</h2>
       <p class="small">Nur {player.name} darf hinschauen!</p>
     </div>
-    <Button size="lg" block onclick={() => (revealed = true)}>Ich bin {player.name} – aufdecken</Button>
+    <Button size="lg" block color={hex} onclick={() => (revealed = true)}>Ich bin {player.name} – aufdecken</Button>
   {:else}
     <div class="panel secret-panel">
       {@render secret(player, index)}
