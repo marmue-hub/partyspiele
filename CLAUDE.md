@@ -36,3 +36,9 @@ Jedes Minispiel hat eine `FEATURES.md` in seinem Ordner (`src/games/<spiel>/FEAT
 - **Ein Feature wird umgesetzt oder geändert:** Trage es dort ein, mit der Version aus `package.json`.
 - **Gemeinsamer Code wird geändert** (`src/lib/`, Registry, Router): Ergänze in der Feature-Datei des Spiels, das die Änderung ausgelöst hat, den Abschnitt „Auswirkungen auf den Rest der App“.
 - **Ein neues Spiel kommt dazu:** Lege seine `FEATURES.md` nach dem Vorbild von `src/games/imposter/FEATURES.md` an.
+
+## Sicherheit
+
+- `main` ist geschützt: Force-Push und Löschen sind verboten, auch für Admins. Normale Pushes gehen.
+- Die GitHub Actions in `.github/workflows/deploy.yml` sind auf Commit-SHAs gepinnt, die Version steht als Kommentar dahinter. Für ein Update löst du den Release-Tag zum Commit-SHA auf (`gh api repos/<action>/git/ref/tags/<tag>`) und ersetzt beides. Ein Release sollte mindestens 2 Wochen alt sein.
+- Dependabot-Sicherheitswarnungen sind aktiv.
