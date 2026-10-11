@@ -38,3 +38,4 @@ public/logo.svg     Quelle für alle App-Icons (werden beim Build erzeugt)
 1. Ordner `src/games/<spiel>/` mit einer Komponente anlegen, die `onexit` als Prop bekommt.
 2. Mit `Screen`, `PlayerSetup`, `PassAndReveal` usw. zusammenbauen.
 3. In `src/games/index.ts` eintragen.
+4. `FEATURES.md` im Spielordner anlegen (Vorlage: `src/games/imposter/FEATURES.md`).
