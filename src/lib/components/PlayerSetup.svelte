@@ -13,21 +13,32 @@
 
   let name = $state('');
   let preferredColor = $state<string | undefined>();
-  /** Index of the player whose color is being changed, or null when picking for a new player. */
-  let editing = $state<number | null>(null);
 
+  /** Index of the player being edited (name + color), or null when adding a new player. */
+  let editing = $state<number | null>(null);
+  let draftName = $state('');
+
+  const nameTaken = (n: string, except?: number) =>
+    players.some((p, i) => i !== except && p.name.toLowerCase() === n.toLowerCase());
+
+  // --- adding ---
   const trimmed = $derived(name.trim());
-  const duplicate = $derived(players.some((p) => p.name.toLowerCase() === trimmed.toLowerCase()));
+  const duplicate = $derived(nameTaken(trimmed));
   const full = $derived(players.length >= MAX_PLAYERS);
 
   const usedColors = $derived(new Set(players.map((p) => p.color)));
   const firstFree = $derived(PLAYER_COLORS.find((c) => !usedColors.has(c.id))?.id);
   // Keep the user's pick unless someone else has taken it meanwhile.
   const newColor = $derived(preferredColor && !usedColors.has(preferredColor) ? preferredColor : firstFree);
-
   const canAdd = $derived(trimmed.length > 0 && !duplicate && !full && newColor !== undefined);
 
+  // --- editing ---
   const editingPlayer = $derived(editing !== null ? players[editing] : undefined);
+  const draftTrimmed = $derived(draftName.trim());
+  const draftDuplicate = $derived(editing !== null && nameTaken(draftTrimmed, editing));
+  const draftValid = $derived(draftTrimmed.length > 0 && !draftDuplicate);
+
+  // --- palette ---
   const paletteSelected = $derived(editingPlayer ? editingPlayer.color : newColor);
   const taken = $derived(
     new Map(players.filter((p) => p !== editingPlayer).map((p) => [p.color, initials(p.name)])),
@@ -50,24 +61,39 @@
     editing = null;
   }
 
-  function selectColor(id: string) {
-    if (editing !== null) {
-      players[editing].color = id;
-      editing = null;
-    } else {
-      preferredColor = id;
-    }
+  function startEdit(i: number) {
+    if (editing === i) return finishEdit();
+    finishEdit();
+    editing = i;
+    draftName = players[i].name;
   }
 
-  function toggleEdit(i: number) {
-    editing = editing === i ? null : i;
+  /** Saves a valid name change and leaves edit mode. Color changes are applied immediately. */
+  function finishEdit() {
+    if (editing !== null && draftValid) players[editing].name = draftTrimmed;
+    editing = null;
+  }
+
+  function submitEdit(e: SubmitEvent) {
+    e.preventDefault();
+    if (draftValid) finishEdit();
+  }
+
+  function selectColor(id: string) {
+    if (editing !== null) players[editing].color = id;
+    else preferredColor = id;
+  }
+
+  function focus(node: HTMLInputElement) {
+    node.focus();
+    node.select();
   }
 </script>
 
 <Card title="Spieler ({players.length}/{MAX_PLAYERS})">
   {#if players.length > 0}
     <ul>
-      {#each players as p, i (p.name)}
+      {#each players as p, i}
         {@const hex = colorHex(p.color)}
         <li class:editing={editing === i} style:--player={hex}>
           <button
@@ -75,49 +101,69 @@
             class="swatch"
             style:background={hex}
             style:color={textColorOn(hex)}
-            onclick={() => toggleEdit(i)}
-            aria-label="Farbe von {p.name} ändern"
+            onclick={() => startEdit(i)}
+            aria-label="{p.name} bearbeiten"
           >
             {initials(p.name)}
           </button>
-          <span class="grow">{p.name}</span>
-          <button type="button" class="remove" onclick={() => remove(i)} aria-label="{p.name} entfernen">×</button>
+
+          {#if editing === i}
+            <form class="edit" onsubmit={submitEdit}>
+              <input
+                bind:value={draftName}
+                use:focus
+                maxlength="20"
+                autocomplete="off"
+                autocapitalize="words"
+                enterkeyhint="done"
+                aria-label="Name ändern"
+              />
+              <button type="submit" class="done" disabled={!draftValid} aria-label="Fertig">✓</button>
+            </form>
+          {:else}
+            <button type="button" class="name grow" onclick={() => startEdit(i)}>{p.name}</button>
+            <button type="button" class="remove" onclick={() => remove(i)} aria-label="{p.name} entfernen">×</button>
+          {/if}
         </li>
       {/each}
     </ul>
   {/if}
 
+  {#if editingPlayer}
+    {#if draftDuplicate}
+      <small class="warn">„{draftTrimmed}“ ist schon dabei.</small>
+    {/if}
+    <small class="muted">Farbe für <strong>{draftTrimmed || editingPlayer.name}</strong>:</small>
+  {/if}
+
   {#if !full || editingPlayer}
-    <div class="picker">
-      {#if editingPlayer}
-        <small class="muted">Neue Farbe für <strong>{editingPlayer.name}</strong>:</small>
-      {/if}
-      <ColorPalette selected={paletteSelected} {taken} onselect={selectColor} />
-    </div>
+    <ColorPalette selected={paletteSelected} {taken} onselect={selectColor} />
   {/if}
 
   {#if !full}
-    <form onsubmit={add}>
+    <form class="add" onsubmit={add}>
       <span class="preview" style:background={newColor ? colorHex(newColor) : 'transparent'}></span>
       <input
         bind:value={name}
-        onfocus={() => (editing = null)}
-        placeholder="Name eingeben"
+        onfocus={finishEdit}
+        placeholder="Neuer Spieler"
         maxlength="20"
         autocomplete="off"
         autocapitalize="words"
         enterkeyhint="done"
       />
-      <button type="submit" disabled={!canAdd}>+</button>
+      <button type="submit" class="plus" disabled={!canAdd}>+</button>
     </form>
   {/if}
 
   {#if duplicate && trimmed}
     <small class="warn">„{trimmed}“ ist schon dabei.</small>
-  {:else if full}
+  {:else if full && !editingPlayer}
     <small class="muted">Alle {MAX_PLAYERS} Farben sind vergeben – mehr Spieler gehen nicht.</small>
   {:else if players.length < min}
     <small class="muted">Mindestens {min} Spieler.</small>
+  {:else if editing === null}
+    <small class="muted">Tippe auf einen Spieler, um Name oder Farbe zu ändern.</small>
   {/if}
 </Card>
 
@@ -132,6 +178,7 @@
     border-radius: 12px;
     padding: 0.4rem 0.5rem;
     font-weight: 600;
+    min-height: 3.2rem;
   }
   li.editing { border-color: var(--player); }
   .swatch {
@@ -146,6 +193,16 @@
     cursor: pointer;
     flex-shrink: 0;
   }
+  .name {
+    appearance: none;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    padding: 0.4rem 0;
+    cursor: pointer;
+  }
   .remove {
     appearance: none;
     border: none;
@@ -156,8 +213,8 @@
     height: 2rem;
     cursor: pointer;
   }
-  .picker { display: flex; flex-direction: column; gap: 8px; }
   form { display: flex; gap: 8px; align-items: center; }
+  .edit { flex: 1; min-width: 0; }
   .preview {
     width: 1.4rem;
     height: 1.4rem;
@@ -175,17 +232,17 @@
     background: var(--bg);
     color: var(--text);
   }
-  form button {
+  .edit input { padding: 0.45rem 0.7rem; }
+  .plus, .done {
     appearance: none;
     border: none;
     border-radius: 12px;
-    width: 3rem;
-    align-self: stretch;
     background: var(--primary);
     color: var(--text);
-    font-size: 1.5rem;
     cursor: pointer;
   }
-  form button:disabled { opacity: 0.35; }
+  .plus { width: 3rem; align-self: stretch; font-size: 1.5rem; }
+  .done { width: 2.4rem; height: 2.4rem; font-size: 1.1rem; font-weight: 800; }
+  .plus:disabled, .done:disabled { opacity: 0.35; }
   .warn { color: var(--accent); }
 </style>

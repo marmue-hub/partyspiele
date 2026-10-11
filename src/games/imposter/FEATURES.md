@@ -5,7 +5,7 @@ diskutiert und abgestimmt.
 
 - **Code:** [Imposter.svelte](Imposter.svelte), [words.ts](words.ts)
 - **Registriert in:** [src/games/index.ts](../index.ts)
-- **Spieler:** 3 bis 12
+- **Spieler:** 3 bis 20
 
 ---
 
@@ -16,8 +16,9 @@ diskutiert und abgestimmt.
 | Feature | Details | Seit |
 |---|---|---|
 | Spielerliste | Namen eingeben, ohne Doppelte (Groß-/Kleinschreibung egal), maximal 20 Zeichen. Die Liste wird gespeichert. | 0.1.0 |
-| Spielerfarben | Jeder Spieler wählt eine von 12 Farben. Vergebene Farben sind gesperrt und zeigen die Initialen ihres Besitzers. Vorausgewählt ist die erste freie Farbe. | 0.2.0 |
+| Spielerfarben | Jeder Spieler wählt eine von 20 Farben (bis 0.2.0 waren es 12). Vergebene Farben sind gesperrt und zeigen die Initialen ihres Besitzers. Vorausgewählt ist die erste freie Farbe. | 0.2.0 |
 | Farbe ändern | Antippen des Farbkreises neben dem Namen öffnet die Palette für diesen Spieler. | 0.2.0 |
+| Spieler bearbeiten | Antippen eines Spielers macht seinen Namen editierbar und öffnet die Palette für ihn. Die Farbe ändert sich sofort, der Name wird mit ✓ oder Enter übernommen. Doppelte oder leere Namen werden abgelehnt. | 0.3.0 |
 | Farbe als Hintergrund | Beim Herumreichen („Gib das Handy an …“) ist die Fläche in der Farbe des Spielers gefüllt. Auch die aufgedeckte Karte ist in seiner Farbe eingefärbt. | 0.2.0 |
 | Farbige Namen | Startspieler und Imposter werden in der Auflösung als Farb-Chip angezeigt. | 0.2.0 |
 
@@ -76,10 +77,17 @@ Imposter war das erste Spiel. Fast die ganze gemeinsame Basis ist deshalb für I
 | Änderung | Ort | Folge für die App |
 |---|---|---|
 | **Spieler-Datenmodell** von `string[]` auf `Player { name, color }` umgestellt | [src/lib/stores/players.svelte.ts](../../lib/stores/players.svelte.ts) | Jedes Spiel muss mit `Player`-Objekten arbeiten (`player.name`). Alte gespeicherte Listen werden beim Laden automatisch übernommen und bekommen der Reihe nach Farben. |
-| **Maximal 12 Spieler** (`MAX_PLAYERS`), weil jede Farbe nur einmal vergeben wird. Vorher waren es 20. | [src/lib/stores/players.svelte.ts](../../lib/stores/players.svelte.ts) | gilt für alle Spiele |
+| **Spielerzahl an Farbanzahl gekoppelt** (`MAX_PLAYERS` = Anzahl Farben), weil jede Farbe nur einmal vergeben wird. In 0.2.0 waren es 12, seit 0.3.0 sind es 20. | [src/lib/stores/players.svelte.ts](../../lib/stores/players.svelte.ts) | gilt für alle Spiele |
 | **Farbpalette** und `textColorOn()`, das je nach Hintergrund schwarze oder weiße Schrift wählt | [src/lib/colors.ts](../../lib/colors.ts) | wiederverwendbar überall, wo Spielerfarben vorkommen |
 | Neue Komponenten **`ColorPalette`** und **`PlayerChip`** | [src/lib/components/](../../lib/components/) | `PlayerSetup` sowie alle Spiele, die Spieler anzeigen |
 | **`PassAndReveal`**: Die Props `players` und das `secret`-Snippet erhalten jetzt `Player` statt `string`. | [src/lib/components/PassAndReveal.svelte](../../lib/components/PassAndReveal.svelte) | Das Herumreichen ist in allen Spielen automatisch farbig. |
+
+### Spieler bearbeiten, 20 Farben (0.3.0)
+
+| Änderung | Ort | Folge für die App |
+|---|---|---|
+| **Palette auf 20 Farben** erweitert, nach Farbton sortiert, Raster mit 5 Spalten | [src/lib/colors.ts](../../lib/colors.ts), [ColorPalette.svelte](../../lib/components/ColorPalette.svelte) | Maximal 20 Spieler in allen Spielen. Bestehende Farb-IDs sind gleich geblieben, gespeicherte Spieler behalten also ihre Farbe. |
+| **Bearbeiten-Modus** in `PlayerSetup` für Name und Farbe | [src/lib/components/PlayerSetup.svelte](../../lib/components/PlayerSetup.svelte) | Alle Spiele, die `PlayerSetup` nutzen, bekommen das automatisch. Ein Spieler wird nur noch über seinen Index in der Liste identifiziert, nicht mehr über den Namen. |
 
 ---
 
@@ -90,7 +98,7 @@ Imposter war das erste Spiel. Fast die ganze gemeinsame Basis ist deshalb für I
 - **Die Liste bereits gespielter Wörter** liegt nur im Arbeitsspeicher und beginnt nach jedem Neustart von vorn.
 - **Signalton im Stummmodus:** Ist das iPhone stumm geschaltet, hört man den Signalton am Ende des Timers nicht.
 - **Keine Vibration**, weil iOS die Vibration API nicht unterstützt.
-- **Höchstens 12 Spieler**, weil es nur 12 Farben gibt.
+- **Höchstens 20 Spieler**, weil es 20 Farben gibt. Mehr Spieler brauchen mehr Farben in [colors.ts](../../lib/colors.ts).
 
 ## Ideen / Backlog
 
