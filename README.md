@@ -4,6 +4,8 @@ Partyspiele als PWA zum Herumreichen auf einem Gerät – läuft offline auf dem
 
 **Spielen:** https://marmue-hub.github.io/partyspiele/ → in Safari *Teilen → Zum Home-Bildschirm*.
 
+**Grundsatz:** Alle Spiele sind leichtgewichtig und komplett offline spielbar. Sie brauchen keinen Server, keine Accounts und keine externen Abrufe.
+
 ## Entwicklung
 
 ```sh
