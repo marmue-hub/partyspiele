@@ -8,7 +8,8 @@
   import PlayerSetup from '../../lib/components/PlayerSetup.svelte';
   import PassAndReveal from '../../lib/components/PassAndReveal.svelte';
   import Timer from '../../lib/components/Timer.svelte';
-  import { players } from '../../lib/stores/players.svelte';
+  import PlayerChip from '../../lib/components/PlayerChip.svelte';
+  import { players, type Player } from '../../lib/stores/players.svelte';
   import { persisted } from '../../lib/persisted.svelte';
   import { pick, pickIndices } from '../../lib/random';
   import { categories } from './words';
@@ -29,11 +30,11 @@
   let resolved = $state(false);
 
   interface Round {
-    players: string[];
+    players: Player[];
     word: string;
     categoryLabel: string;
     imposters: Set<number>;
-    starter: string;
+    starter: Player;
   }
   let round = $state<Round | null>(null);
 
@@ -44,7 +45,7 @@
   const canStart = $derived(players.value.length >= MIN_PLAYERS);
 
   function startRound() {
-    const list = [...players.value];
+    const list = $state.snapshot(players.value);
     const pool = categories.filter((c) => settings.value.categoryIds.includes(c.id));
     const candidates = pool.flatMap((c) => c.words.map((w) => ({ word: w, category: c })));
     let fresh = candidates.filter((c) => !usedWords.has(c.word));
@@ -127,7 +128,7 @@
     </PassAndReveal>
   {:else if phase === 'discuss' && round}
     <Card>
-      <p class="center big">🎤 <strong>{round.starter}</strong> beginnt.</p>
+      <p class="center big">🎤 <PlayerChip player={round.starter} /> beginnt.</p>
       <p class="muted center">Reihum sagt jeder ein Wort zum Begriff. Danach wird diskutiert und abgestimmt.</p>
     </Card>
     {#if settings.value.minutes > 0}
@@ -144,7 +145,7 @@
     {:else}
       <Card title={round.imposters.size > 1 ? 'Die Imposter' : 'Der Imposter'}>
         {#each [...round.imposters] as i (i)}
-          <h2 class="imposter center">🕵️ {round.players[i]}</h2>
+          <p class="center">🕵️ <PlayerChip player={round.players[i]} size="lg" /></p>
         {/each}
       </Card>
       <Card title="Das Wort">

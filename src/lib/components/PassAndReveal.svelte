@@ -1,15 +1,18 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import Button from './Button.svelte';
+  import { colorHex, textColorOn } from '../colors';
+  import type { Player } from '../stores/players.svelte';
 
   /**
    * Pass-the-phone flow: each player in turn takes the device,
    * reveals their secret, hides it again and passes it on.
+   * The player's color fills the panel so everyone sees whose turn it is.
    */
   interface Props {
-    players: string[];
+    players: Player[];
     /** Content shown to the player while revealed. */
-    secret: Snippet<[player: string, index: number]>;
+    secret: Snippet<[player: Player, index: number]>;
     ondone: () => void;
   }
 
@@ -20,6 +23,7 @@
 
   const player = $derived(players[index]);
   const isLast = $derived(index === players.length - 1);
+  const hex = $derived(colorHex(player.color));
 
   function next() {
     revealed = false;
@@ -28,16 +32,16 @@
   }
 </script>
 
-<div class="wrap">
+<div class="wrap" style:--player={hex} style:--on-player={textColorOn(hex)}>
   <p class="progress label">Spieler {index + 1} von {players.length}</p>
 
   {#if !revealed}
     <div class="panel hidden-panel">
-      <p class="muted">Gib das Handy an</p>
-      <h2 class="name">{player}</h2>
-      <p class="muted small">Nur {player} darf hinschauen!</p>
+      <p>Gib das Handy an</p>
+      <h2 class="name">{player.name}</h2>
+      <p class="small">Nur {player.name} darf hinschauen!</p>
     </div>
-    <Button size="lg" block onclick={() => (revealed = true)}>Ich bin {player} – aufdecken</Button>
+    <Button size="lg" block onclick={() => (revealed = true)}>Ich bin {player.name} – aufdecken</Button>
   {:else}
     <div class="panel secret-panel">
       {@render secret(player, index)}
@@ -64,18 +68,26 @@
     text-align: center;
   }
   .hidden-panel {
-    background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 14px, var(--surface-2) 14px, var(--surface-2) 28px);
-    border: 1px solid var(--border);
+    background:
+      repeating-linear-gradient(45deg, transparent, transparent 14px, rgb(0 0 0 / 0.08) 14px, rgb(0 0 0 / 0.08) 28px),
+      var(--player);
+    color: var(--on-player);
+    animation: slide-in 0.3s ease-out;
   }
+  .hidden-panel p { opacity: 0.85; }
   .secret-panel {
-    background: var(--surface);
-    border: 2px solid var(--accent);
+    background: color-mix(in srgb, var(--player) 18%, var(--surface));
+    border: 3px solid var(--player);
     animation: flip 0.25s ease-out;
   }
   .name { font-size: 2.6rem; word-break: break-word; }
   .small { font-size: 0.9rem; }
   @keyframes flip {
     from { transform: rotateY(90deg); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+  @keyframes slide-in {
+    from { transform: translateX(30%); opacity: 0; }
     to { transform: none; opacity: 1; }
   }
 </style>
